@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\purchase_order;
-use App\Http\Controllers\Controller;
 use App\Models\accounts;
 use App\Models\products;
+use App\Models\purchase_order;
 use App\Models\purchase_order_details;
 use App\Models\units;
 use Exception;
@@ -22,7 +21,8 @@ class PurchaseOrderController extends Controller
         $start = $request->start ?? now()->toDateString();
         $end = $request->end ?? now()->toDateString();
 
-        $orders = purchase_order::whereBetween("date", [$start, $end])->orderby('id', 'desc')->get();
+        $orders = purchase_order::whereBetween('date', [$start, $end])->orderby('id', 'desc')->get();
+
         return view('purchase_order.index', compact('orders', 'start', 'end'));
     }
 
@@ -34,6 +34,7 @@ class PurchaseOrderController extends Controller
         $products = products::orderby('name', 'asc')->get();
         $units = units::all();
         $vendors = accounts::vendor()->get();
+
         return view('purchase_order.create', compact('products', 'units', 'vendors'));
     }
 
@@ -43,27 +44,24 @@ class PurchaseOrderController extends Controller
     public function store(Request $request)
     {
 
-        try
-        {
-            if($request->isNotFilled('id'))
-            {
+        try {
+            if ($request->isNotFilled('id')) {
                 throw new Exception('Please Select Atleast One Product');
             }
             DB::beginTransaction();
             $ref = getRef();
             $order = purchase_order::create(
                 [
-                  'vendorID'        => $request->vendorID,
-                  'date'            => $request->date,
-                  'notes'           => $request->notes,
+                    'vendorID' => $request->vendorID,
+                    'date' => $request->date,
+                    'notes' => $request->notes,
                 ]
             );
 
             $ids = $request->id;
 
             $total = 0;
-            foreach($ids as $key => $id)
-            {
+            foreach ($ids as $key => $id) {
                 $unit = units::find($request->unit[$key]);
                 $qty = ($request->qty[$key] * $unit->value);
                 $price = $request->price[$key];
@@ -72,34 +70,33 @@ class PurchaseOrderController extends Controller
 
                 purchase_order_details::create(
                     [
-                        'orderID'       => $order->id,
-                        'productID'     => $id,
-                        'price'         => $price,
-                        'qty'           => $qty,
-                        'amount'        => $amount,
-                        'unitID'        => $unit->id,
-                        'unitValue'     => $unit->value,
+                        'orderID' => $order->id,
+                        'productID' => $id,
+                        'price' => $price,
+                        'qty' => $qty,
+                        'amount' => $amount,
+                        'unitID' => $unit->id,
+                        'unitValue' => $unit->value,
                     ]
                 );
             }
 
             $order->update(
                 [
-                    'net'       => $total,
+                    'net' => $total,
                 ]
             );
             DB::commit();
-            return back()->with('success', "Purchase Order Created");
 
-        }
-        catch(\Exception $e)
-        {
+            return back()->with('success', 'Purchase Order Created');
+
+        } catch (Exception $e) {
             DB::rollback();
+
             return back()->with('error', $e->getMessage());
         }
 
     }
-
 
     /**
      * Display the specified resource.
@@ -107,6 +104,7 @@ class PurchaseOrderController extends Controller
     public function show($id)
     {
         $order = purchase_order::findOrFail($id);
+
         return view('purchase_order.view', compact('order'));
     }
 
@@ -119,6 +117,7 @@ class PurchaseOrderController extends Controller
         $products = products::orderby('name', 'asc')->get();
         $units = units::all();
         $vendors = accounts::vendor()->get();
+
         return view('purchase_order.edit', compact('products', 'units', 'vendors', 'order'));
     }
 
@@ -127,10 +126,8 @@ class PurchaseOrderController extends Controller
      */
     public function update(Request $request, $id)
     {
-        try
-        {
-            if($request->isNotFilled('id'))
-            {
+        try {
+            if ($request->isNotFilled('id')) {
                 throw new Exception('Please Select Atleast One Product');
             }
             DB::beginTransaction();
@@ -139,18 +136,16 @@ class PurchaseOrderController extends Controller
 
             $order->update(
                 [
-                    'vendorID'        => $request->vendorID,
-                    'date'            => $request->date,
-                    'notes'           => $request->notes,
-                  ]
+                    'vendorID' => $request->vendorID,
+                    'date' => $request->date,
+                    'notes' => $request->notes,
+                ]
             );
 
             $ids = $request->id;
 
             $total = 0;
-            dashboard();
-            foreach($ids as $key => $id)
-            {
+            foreach ($ids as $key => $id) {
                 $unit = units::find($request->unit[$key]);
                 $qty = $request->qty[$key] * $unit->value;
                 $price = $request->price[$key];
@@ -159,29 +154,28 @@ class PurchaseOrderController extends Controller
 
                 purchase_order_details::create(
                     [
-                        'orderID'       => $order->id,
-                        'productID'     => $id,
-                        'price'         => $price,
-                        'qty'           => $qty,
-                        'amount'        => $amount,
-                        'unitID'        => $unit->id,
-                        'unitValue'     => $unit->value,
+                        'orderID' => $order->id,
+                        'productID' => $id,
+                        'price' => $price,
+                        'qty' => $qty,
+                        'amount' => $amount,
+                        'unitID' => $unit->id,
+                        'unitValue' => $unit->value,
                     ]
                 );
             }
 
-
             $order->update(
                 [
-                    'net'       => $total,
+                    'net' => $total,
                 ]
             );
             DB::commit();
-            return back()->with('success', "Purchase Order Updated");
-        }
-        catch(\Exception $e)
-        {
+
+            return back()->with('success', 'Purchase Order Updated');
+        } catch (Exception $e) {
             DB::rollback();
+
             return back()->with('error', $e->getMessage());
         }
     }
@@ -192,21 +186,20 @@ class PurchaseOrderController extends Controller
     public function destroy($id)
     {
 
-        try
-        {
+        try {
             DB::beginTransaction();
             $order = purchase_order::findOrFail($id);
-           
+
             $order->details()->delete();
             $order->delete();
             DB::commit();
             session()->forget('confirmed_password');
-            return redirect()->route('purchase_order.index')->with('success', "Purchase Order Deleted");
-        }
-        catch(\Exception $e)
-        {
+
+            return redirect()->route('purchase_order.index')->with('success', 'Purchase Order Deleted');
+        } catch (Exception $e) {
             DB::rollBack();
             session()->forget('confirmed_password');
+
             return redirect()->route('purchase_order.index')->with('error', $e->getMessage());
         }
     }

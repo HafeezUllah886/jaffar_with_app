@@ -19,15 +19,12 @@ class OrdersController extends Controller
     {
         $start = $request->start ?? now()->toDateString();
         $end = $request->end ?? now()->toDateString();
-        dashboard();
-        if(Auth()->user()->role == "Admin")
-        {
-            $orders = orders::whereBetween("date", [$start, $end])->orderBy('id', 'desc')->get();
+        if (Auth()->user()->role == 'Admin') {
+            $orders = orders::whereBetween('date', [$start, $end])->orderBy('id', 'desc')->get();
+        } else {
+            $orders = orders::where('orderbookerID', auth()->user()->id)->whereBetween('date', [$start, $end])->orderBy('id', 'desc')->get();
         }
-        else
-        {
-            $orders = orders::where('orderbookerID', auth()->user()->id)->whereBetween("date", [$start, $end])->orderBy('id', 'desc')->get();
-        }
+
         return view('orders.index', compact('orders', 'start', 'end'));
     }
 
@@ -37,12 +34,12 @@ class OrdersController extends Controller
     public function create()
     {
         $products = products::all();
-        foreach($products as $product)
-        {
+        foreach ($products as $product) {
             $product->stock = getStock($product->id);
         }
         $customers = accounts::Customer()->get();
         $units = units::all();
+
         return view('orders.create', compact('products', 'customers', 'units'));
     }
 
@@ -51,10 +48,8 @@ class OrdersController extends Controller
      */
     public function store(Request $request)
     {
-        try
-        {
-            if($request->isNotFilled('id'))
-            {
+        try {
+            if ($request->isNotFilled('id')) {
                 throw new Exception('Please Select Atleast One Product');
             }
 
@@ -62,19 +57,18 @@ class OrdersController extends Controller
             $ref = getRef();
             $order = orders::create(
                 [
-                  'orderbookerID'  => auth()->user()->id,
-                  'customerID'  => $request->customerID,
-                  'date'        => $request->date,
-                  'wh'          => $request->whTax,
-                  'notes'       => $request->notes,
+                    'orderbookerID' => auth()->user()->id,
+                    'customerID' => $request->customerID,
+                    'date' => $request->date,
+                    'wh' => $request->whTax,
+                    'notes' => $request->notes,
                 ]
             );
 
             $ids = $request->id;
 
             $total = 0;
-            foreach($ids as $key => $id)
-            {
+            foreach ($ids as $key => $id) {
                 $unit = units::find($request->unit[$key]);
                 $product = products::find($id);
                 $qty = $request->qty[$key] * $unit->value;
@@ -83,16 +77,16 @@ class OrdersController extends Controller
                 $total += $amount;
                 order_details::create(
                     [
-                        'orderID'       => $order->id,
-                        'productID'     => $id,
-                        'price'         => $product->price,
-                        'qty'           => $qty,
-                        'discount'      => $request->discount[$key],
-                        'bonus'         => $request->bonus[$key] ?? 0,
-                        'amount'        => $amount,
-                        'date'          => $request->date,
-                        'unitID'        => $unit->id,
-                        'unitValue'     => $unit->value,
+                        'orderID' => $order->id,
+                        'productID' => $id,
+                        'price' => $product->price,
+                        'qty' => $qty,
+                        'discount' => $request->discount[$key],
+                        'bonus' => $request->bonus[$key] ?? 0,
+                        'amount' => $amount,
+                        'date' => $request->date,
+                        'unitID' => $unit->id,
+                        'unitValue' => $unit->value,
                     ]
                 );
             }
@@ -106,13 +100,13 @@ class OrdersController extends Controller
                 ]
             );
 
-           DB::commit();
-            return to_route('orders.show', $order->id)->with('success', "Order Created");
+            DB::commit();
 
-        }
-        catch(\Exception $e)
-        {
+            return to_route('orders.show', $order->id)->with('success', 'Order Created');
+
+        } catch (Exception $e) {
             DB::rollback();
+
             return back()->with('error', $e->getMessage());
         }
     }
@@ -122,7 +116,7 @@ class OrdersController extends Controller
      */
     public function show(orders $order)
     {
-        return view('orders.view',compact('order'));
+        return view('orders.view', compact('order'));
     }
 
     /**
@@ -133,6 +127,7 @@ class OrdersController extends Controller
         $products = products::all();
         $customers = accounts::Customer()->get();
         $units = units::all();
+
         return view('orders.edit', compact('products', 'customers', 'units', 'order'));
     }
 
@@ -141,31 +136,27 @@ class OrdersController extends Controller
      */
     public function update(Request $request, orders $order)
     {
-        try
-        {
-            if($request->isNotFilled('id'))
-            {
+        try {
+            if ($request->isNotFilled('id')) {
                 throw new Exception('Please Select Atleast One Product');
             }
             DB::beginTransaction();
-            foreach($order->details as $product)
-            {
+            foreach ($order->details as $product) {
                 $product->delete();
             }
             $order->update(
                 [
-                  'customerID'  => $request->customerID,
-                  'date'        => $request->date,
-                  'notes'       => $request->notes,
-                  'wh'          => $request->whTax,
+                    'customerID' => $request->customerID,
+                    'date' => $request->date,
+                    'notes' => $request->notes,
+                    'wh' => $request->whTax,
                 ]
             );
 
             $ids = $request->id;
 
             $total = 0;
-            foreach($ids as $key => $id)
-            {
+            foreach ($ids as $key => $id) {
                 $unit = units::find($request->unit[$key]);
                 $product = products::find($id);
                 $qty = $request->qty[$key] * $unit->value;
@@ -174,16 +165,16 @@ class OrdersController extends Controller
                 $total += $amount;
                 order_details::create(
                     [
-                        'orderID'       => $order->id,
-                        'productID'     => $id,
-                        'price'         => $product->price,
-                        'qty'           => $qty,
-                        'discount'      => $request->discount[$key],
-                        'bonus'         => $request->bonus[$key],
-                        'amount'        => $amount,
-                        'date'          => $request->date,
-                        'unitID'        => $unit->id,
-                        'unitValue'     => $unit->value,
+                        'orderID' => $order->id,
+                        'productID' => $id,
+                        'price' => $product->price,
+                        'qty' => $qty,
+                        'discount' => $request->discount[$key],
+                        'bonus' => $request->bonus[$key],
+                        'amount' => $amount,
+                        'date' => $request->date,
+                        'unitID' => $unit->id,
+                        'unitValue' => $unit->value,
                     ]
                 );
             }
@@ -197,13 +188,13 @@ class OrdersController extends Controller
                 ]
             );
 
-           DB::commit();
-            return to_route('orders.show', $order->id)->with('success', "Order Update");
+            DB::commit();
 
-        }
-        catch(\Exception $e)
-        {
+            return to_route('orders.show', $order->id)->with('success', 'Order Update');
+
+        } catch (Exception $e) {
             DB::rollback();
+
             return back()->with('error', $e->getMessage());
         }
 
@@ -214,24 +205,22 @@ class OrdersController extends Controller
      */
     public function destroy($id)
     {
-        try
-        {
+        try {
             DB::beginTransaction();
             $order = orders::find($id);
 
-            foreach($order->details as $product)
-            {
+            foreach ($order->details as $product) {
                 $product->delete();
             }
             $order->delete();
             DB::commit();
             session()->forget('confirmed_password');
-            return to_route('orders.index')->with('success', "Order Deleted");
-        }
-        catch(\Exception $e)
-        {
+
+            return to_route('orders.index')->with('success', 'Order Deleted');
+        } catch (Exception $e) {
             DB::rollBack();
             session()->forget('confirmed_password');
+
             return to_route('orders.index')->with('error', $e->getMessage());
         }
     }
@@ -239,8 +228,7 @@ class OrdersController extends Controller
     public function sale($id)
     {
         $products = products::orderby('name', 'asc')->get();
-        foreach($products as $product)
-        {
+        foreach ($products as $product) {
             $stock = getStock($product->id);
             $product->stock = $stock;
         }
@@ -250,16 +238,17 @@ class OrdersController extends Controller
         $orderbookers = User::where('role', 'Orderbooker')->get();
         $order = orders::find($id);
         $deliverymen = deliveryman::all();
+
         return view('orders.sale', compact('products', 'units', 'customers', 'accounts', 'orderbookers', 'order', 'deliverymen'));
     }
 
     public function getCustomer($id)
     {
         $customer = accounts::find($id);
-        
+
         return response()->json([
             'ntn' => $customer->ntn,
-            'strn' => $customer->strn
+            'strn' => $customer->strn,
         ]);
     }
 }

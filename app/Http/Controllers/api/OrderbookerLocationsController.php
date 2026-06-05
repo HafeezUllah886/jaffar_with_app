@@ -16,6 +16,13 @@ class OrderbookerLocationsController extends Controller
             'longitude' => 'required',
         ]);
 
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+
         $orderbookerLocation = OrderbookerLocations::create([
             'userID' => $request->user()->id,
             'latitude' => $request->latitude,

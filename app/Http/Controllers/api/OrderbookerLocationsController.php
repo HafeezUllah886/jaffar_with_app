@@ -5,14 +5,15 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use App\Models\OrderbookerLocations;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class OrderbookerLocationsController extends Controller
 {
     public function store(Request $request)
     {
-        $request->validate([
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
+        $validator = Validator::make($request->all(), [
+            'latitude' => 'required',
+            'longitude' => 'required',
         ]);
 
         $orderbookerLocation = OrderbookerLocations::create([

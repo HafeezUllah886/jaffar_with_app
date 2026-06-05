@@ -11,5 +11,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [authController::class, 'logout']);
     Route::get('products', [nonFinanancialInfoController::class, 'products']);
     Route::get('units', [nonFinanancialInfoController::class, 'units']);
-    Route::post('orderbooker-location/store', [OrderbookerLocationsController::class, 'store']);
+    Route::post('/storelocation', [OrderbookerLocationsController::class, 'store']);
 });

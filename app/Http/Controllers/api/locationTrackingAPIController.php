@@ -11,9 +11,11 @@ class locationTrackingAPIController extends Controller
 {
     public function storeLocation(Request $request)
     {
-        /* $validator = Validator::make($request->all(), [
-            'latitude' => 'required',
-            'longitude' => 'required',
+        $validator = Validator::make($request->all(), [
+            'locations' => 'required|array|min:1',
+            'locations.*.latitude' => 'required|numeric',
+            'locations.*.longitude' => 'required|numeric',
+            'locations.*.time' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -21,7 +23,7 @@ class locationTrackingAPIController extends Controller
                 'success' => false,
                 'message' => $validator->errors(),
             ], 422);
-        } */
+        }
 
         try {
 

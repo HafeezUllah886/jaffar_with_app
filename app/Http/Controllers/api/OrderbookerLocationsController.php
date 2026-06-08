@@ -11,28 +11,44 @@ class OrderbookerLocationsController extends Controller
 {
     public function store(Request $request)
     {
+
         $validator = Validator::make($request->all(), [
-            'latitude' => 'required',
-            'longitude' => 'required',
+            'locations' => 'required|array|min:1',
+            'locations.*.latitude' => 'required|numeric',
+            'locations.*.longitude' => 'required|numeric',
+            'locations.*.time' => 'required',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 400);
+                'success' => false,
+                'message' => $validator->errors(),
+            ], 422);
         }
 
-        $orderbookerLocation = OrderbookerLocations::create([
-            'userID' => $request->user()->id,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
+        try {
 
-        ]);
+            foreach ($request->locations as $location) {
+                OrderbookerLocations::create(
+                    [
+                        'latitude' => $location['latitude'],
+                        'longitude' => $location['longitude'],
+                        'date' => date('Y-m-d'),
+                        'time' => date('H:i:s'),
+                        'userID' => auth()->id(),
+                    ]
+                );
+            }
 
-        return response()->json([
-            'message' => 'Orderbooker location created successfully',
-            'orderbookerLocation' => $orderbookerLocation,
-        ], 200);
+            return response()->json([
+                'success' => true,
+                'message' => 'Location stored successfully',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

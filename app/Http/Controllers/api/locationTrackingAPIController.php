@@ -28,8 +28,8 @@ class locationTrackingAPIController extends Controller
                 [
                     'latitude' => $location['latitude'],
                     'longitude' => $location['longitude'],
-                    'date' => date('Y-m-d', strtotime($location['time'])),
-                    'time' => date('H:i:s', strtotime($location['time'])),
+                    'date' => date('Y-m-d'),
+                    'time' => date('H:i:s'),
                     'userID' => auth()->id(),
                 ]
             );

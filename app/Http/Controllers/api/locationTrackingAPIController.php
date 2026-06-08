@@ -23,22 +23,29 @@ class locationTrackingAPIController extends Controller
             ], 422);
         } */
 
-        foreach ($request->locations as $location) {
-            OrderbookerLocations::create(
-                [
-                    'latitude' => $location['latitude'],
-                    'longitude' => $location['longitude'],
-                    'date' => date('Y-m-d'),
-                    'time' => date('H:i:s'),
-                    'userID' => auth()->id(),
-                ]
-            );
+        try {
+
+            foreach ($request->locations as $location) {
+                OrderbookerLocations::create(
+                    [
+                        'latitude' => $location['latitude'],
+                        'longitude' => $location['longitude'],
+                        'date' => date('Y-m-d'),
+                        'time' => date('H:i:s'),
+                        'userID' => auth()->id(),
+                    ]
+                );
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Location stored successfully',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
         }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Location stored successfully',
-        ], 200);
-
     }
 }

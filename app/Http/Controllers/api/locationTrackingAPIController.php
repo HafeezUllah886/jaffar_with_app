@@ -11,7 +11,7 @@ class locationTrackingAPIController extends Controller
 {
     public function storeLocation(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        /* $validator = Validator::make($request->all(), [
             'latitude' => 'required',
             'longitude' => 'required',
         ]);
@@ -21,7 +21,7 @@ class locationTrackingAPIController extends Controller
                 'success' => false,
                 'message' => $validator->errors(),
             ], 422);
-        }
+        } */
 
         foreach ($request->locations as $location) {
             OrderbookerLocations::create(

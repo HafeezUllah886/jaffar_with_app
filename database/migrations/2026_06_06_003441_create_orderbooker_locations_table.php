@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('orderbooker_locations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('userID')->references('id')->on('users')->onDelete('cascade');
-            $table->string('latitude');
-            $table->string('longitude');
+            $table->decimal('latitude', 10, 15);
+            $table->decimal('longitude', 10, 15);
             $table->date('date')->default(now());
             $table->time('time')->default(now());
             $table->timestamps();

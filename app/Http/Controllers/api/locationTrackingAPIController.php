@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
-use App\Models\location_tracking;
+use App\Models\OrderbookerLocations;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -18,27 +18,27 @@ class locationTrackingAPIController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'status' => 'error',
+                'success' => false,
                 'message' => $validator->errors(),
             ], 422);
         }
 
-        $location = location_tracking::create(
-            [
-                'latitude' => $request->latitude,
-                'longitude' => $request->longitude,
-                'date' => date('Y-m-d'),
-                'time' => date('H:i:s'),
-                'userID' => auth()->id(),
-            ]
-        );
+        foreach ($request->locations as $location) {
+            OrderbookerLocations::create(
+                [
+                    'latitude' => $location['latitude'],
+                    'longitude' => $location['longitude'],
+                    'date' => date('Y-m-d', strtotime($location['time'])),
+                    'time' => date('H:i:s', strtotime($location['time'])),
+                    'userID' => auth()->id(),
+                ]
+            );
+        }
 
         return response()->json([
-            'status' => 'success',
+            'success' => true,
             'message' => 'Location stored successfully',
-            'location' => $location
         ], 200);
 
     }
-
 }

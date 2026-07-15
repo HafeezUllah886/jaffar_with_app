@@ -20,9 +20,12 @@ return new class extends Migration
             $table->string('cnic')->nullable();
             $table->string('contact')->nullable();
             $table->string('address')->nullable();
+            $table->string('longitude')->nullable();
+            $table->string('latitude')->nullable();
             $table->string('ntn')->nullable();
             $table->string('strn')->nullable();
             $table->string('hidf')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

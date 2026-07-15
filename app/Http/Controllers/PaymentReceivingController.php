@@ -20,7 +20,7 @@ class PaymentReceivingController extends Controller
         $froms = accounts::where('type', '!=', 'Business')->get();
         $accounts = accounts::Business()->get();
 
-        return view('Finance.receiving.index', compact('receivings', 'froms', 'accounts'));
+        return view('finance.receiving.index', compact('receivings', 'froms', 'accounts'));
     }
 
     /**
@@ -36,8 +36,7 @@ class PaymentReceivingController extends Controller
      */
     public function store(Request $request)
     {
-        try
-        {
+        try {
             DB::beginTransaction();
             $ref = getRef();
             paymentReceiving::create(
@@ -52,15 +51,15 @@ class PaymentReceivingController extends Controller
                 ]
             );
 
-            createTransaction($request->accountID, $request->date, $request->amount, 0, "Amount Received <br>" . $request->notes, $ref);
-            createTransaction($request->fromID, $request->date, $request->amount, 0, "Amount Received <bt>" . $request->notes, $ref);
+            createTransaction($request->accountID, $request->date, $request->amount, 0, 'Amount Received <br>'.$request->notes, $ref);
+            createTransaction($request->fromID, $request->date, $request->amount, 0, 'Amount Received <bt>'.$request->notes, $ref);
 
             DB::commit();
+
             return back()->with('success', 'Receipt Saved');
-        }
-        catch(\Exception $e)
-        {
+        } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->with('error', $e->getMessage());
         }
     }
@@ -71,14 +70,16 @@ class PaymentReceivingController extends Controller
     public function show($id)
     {
         $receiving = paymentReceiving::find($id);
-        return view('Finance.receiving.receipt', compact('receiving'));
+
+        return view('finance.receiving.receipt', compact('receiving'));
     }
 
     public function pdf($id)
     {
         $receiving = paymentReceiving::find($id);
-        $pdf = Pdf::loadview('Finance.receiving.pdf', compact('receiving'));
+        $pdf = Pdf::loadview('finance.receiving.pdf', compact('receiving'));
         $pdf->set_paper('letter', 'landscape');
+
         return $pdf->download("Receiving - $receiving->refID.pdf");
     }
 
@@ -100,19 +101,18 @@ class PaymentReceivingController extends Controller
      */
     public function delete($ref)
     {
-        try
-        {
+        try {
             DB::beginTransaction();
             paymentReceiving::where('refID', $ref)->delete();
             transactions::where('refID', $ref)->delete();
             DB::commit();
             session()->forget('confirmed_password');
-            return redirect()->route('receivings.index')->with('success', "Receiving Deleted");
-        }
-        catch(\Exception $e)
-        {
+
+            return redirect()->route('receivings.index')->with('success', 'Receiving Deleted');
+        } catch (\Exception $e) {
             DB::rollBack();
             session()->forget('confirmed_password');
+
             return redirect()->route('receivings.index')->with('error', $e->getMessage());
         }
     }

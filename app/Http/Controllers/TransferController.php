@@ -17,7 +17,8 @@ class TransferController extends Controller
     {
         $transfers = transfer::orderby('id', 'desc')->get();
         $accounts = accounts::all();
-        return view('Finance.transfer.index', compact('transfers', 'accounts'));
+
+        return view('finance.transfer.index', compact('transfers', 'accounts'));
     }
 
     /**
@@ -35,15 +36,14 @@ class TransferController extends Controller
     {
         $request->validate(
             [
-                'to' => 'different:from'
+                'to' => 'different:from',
             ],
             [
-                'to.different' => "From and To Accounts Must be different"
+                'to.different' => 'From and To Accounts Must be different',
             ]
         );
 
-        try
-        {
+        try {
             DB::beginTransaction();
             $ref = getRef();
             $transfer = transfer::create(
@@ -58,30 +58,25 @@ class TransferController extends Controller
             );
             $fromAccount = $transfer->fromAccount->title;
             $toAccount = $transfer->toAccount->title;
-            if($transfer->fromAccount->type == "Customer")
-            {
-                createTransaction($request->from,$request->date, $request->amount, 0, "Transfered to $toAccount", $ref);
+            if ($transfer->fromAccount->type == 'Customer') {
+                createTransaction($request->from, $request->date, $request->amount, 0, "Transfered to $toAccount", $ref);
                 createTransaction($request->to, $request->date, $request->amount, 0, "Transfered from $fromAccount", $ref);
-              
-            }
-            elseif($transfer->toAccount->type == "Customer")
-            {
-                createTransaction($request->from,$request->date, 0, $request->amount, "Transfered to $toAccount", $ref);
+
+            } elseif ($transfer->toAccount->type == 'Customer') {
+                createTransaction($request->from, $request->date, 0, $request->amount, "Transfered to $toAccount", $ref);
                 createTransaction($request->to, $request->date, 0, $request->amount, "Transfered from $fromAccount", $ref);
-             
-            }
-            else
-            {
-                createTransaction($request->from,$request->date, 0, $request->amount, "Transfered to $toAccount", $ref);
+
+            } else {
+                createTransaction($request->from, $request->date, 0, $request->amount, "Transfered to $toAccount", $ref);
                 createTransaction($request->to, $request->date, $request->amount, 0, "Transfered from $fromAccount", $ref);
-                
+
             }
             DB::commit();
-            return back()->with('success', "Transfered Successfully");
-        }
-        catch(\Exception $e)
-        {
+
+            return back()->with('success', 'Transfered Successfully');
+        } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->with('error', $e->getMessage());
         }
     }
@@ -115,19 +110,18 @@ class TransferController extends Controller
      */
     public function delete($ref)
     {
-        try
-        {
+        try {
             DB::beginTransaction();
             transfer::where('refID', $ref)->delete();
             transactions::where('refID', $ref)->delete();
             DB::commit();
             session()->forget('confirmed_password');
-            return redirect()->route('transfers.index')->with('success', "Transfer Deleted");
-        }
-        catch(\Exception $e)
-        {
+
+            return redirect()->route('transfers.index')->with('success', 'Transfer Deleted');
+        } catch (\Exception $e) {
             DB::rollBack();
             session()->forget('confirmed_password');
+
             return redirect()->route('transfers.index')->with('error', $e->getMessage());
         }
     }

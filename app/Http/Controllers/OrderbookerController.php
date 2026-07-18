@@ -107,4 +107,37 @@ class OrderbookerController extends Controller
     {
         //
     }
+    public function customers($id)
+    {
+        $orderbooker = User::findOrFail($id);
+        $allCustomers = \App\Models\accounts::where('type', 'Customer')->get();
+        $assignedCustomerIds = \App\Models\OrderbookerCustomer::where('orderbooker_id', $id)->pluck('customer_id')->toArray();
+        $unassignedCustomers = $allCustomers->whereNotIn('id', $assignedCustomerIds);
+        $assignedCustomers = \App\Models\accounts::whereIn('id', $assignedCustomerIds)->get();
+
+        return view('orderbookers.customers', compact('orderbooker', 'unassignedCustomers', 'assignedCustomers'));
+    }
+
+    public function assignCustomer(Request $request, $id)
+    {
+        $request->validate([
+            'customer_id' => 'required|exists:accounts,id'
+        ]);
+
+        \App\Models\OrderbookerCustomer::firstOrCreate([
+            'orderbooker_id' => $id,
+            'customer_id' => $request->customer_id
+        ]);
+
+        return back()->with('success', 'Customer assigned successfully.');
+    }
+
+    public function removeCustomer($id, $customer_id)
+    {
+        \App\Models\OrderbookerCustomer::where('orderbooker_id', $id)
+            ->where('customer_id', $customer_id)
+            ->delete();
+
+        return back()->with('success', 'Customer removed successfully.');
+    }
 }

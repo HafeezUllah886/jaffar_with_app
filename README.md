@@ -1,66 +1,112 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Jaffar Management System (ERP / Inventory / POS)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This repository contains a comprehensive Business Management System built with Laravel. It handles multiple aspects of a trading/distribution business, including inventory (stock), sales, purchases, order booking, finance, and reporting.
 
-## About Laravel
+**Purpose of this README:** This document provides a complete architectural overview for any AI or developer to quickly understand the project's structure without having to manually read every file.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 1. Module Overview
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+The system is modularized into several key business domains:
+- **Core Operations:** Products, Categories, Units.
+- **Sales & Orders:** Sales, Sale Payments, Orders, Order bookers, Deliverymen, Transporters. *(Note: Order bookers can have specific Customers assigned to them via `orderbooker_customers` pivot table).*
+- **Purchases:** Purchases, Purchase Orders, Purchase Payments.
+- **Stock & Inventory:** Stock management, Stock Adjustments, Transfers.
+- **Finance & Accounts:** Chart of Accounts, Deposits & Withdrawals, Expenses, Payment Receiving.
+- **Targets:** Self Targets, Orderbooker Targets.
+- **Reports:** A comprehensive suite of reports for all the above modules.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 2. Routes (`/routes`)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+To keep the application manageable, routes are logically separated into multiple files rather than being stuffed into a single `web.php`:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- `web.php`: Core application routes (Dashboard, Units, Categories, Products, Transporter, Deliveryman) and requires other route files.
+- `auth.php`: Authentication routes (login, register, password reset).
+- `finance.php`: Routes related to financial transactions, expenses, deposits, withdrawals, and account management.
+- `purchase.php`: Routes for managing purchases and purchase payments.
+- `purchase_order.php`: Routes specifically for generating and managing purchase orders.
+- `stock.php`: Routes for stock overview, adjustments, and warehouse transfers.
+- `sale.php`: Routes for sales invoices, sale details, and sale payments.
+- `orders.php`: Routes for managing orders placed by order bookers or customers.
+- `targets.php`: Routes for defining and tracking sales targets (self and order bookers).
+- `reports.php`: Contains all reporting routes (sales reports, stock reports, financial ledgers, etc.).
+- `api.php`: API endpoints for the application (if accessed via mobile app or external services).
+- `console.php`: Artisan console commands.
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 3. Controllers (`app/Http/Controllers/`)
 
-### Premium Partners
+The controllers map 1:1 with the business modules. They contain the core logic for processing requests:
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### Core / Setup Controllers
+- `ProductsController.php`: Manages product creation, editing, and listing.
+- `CategoriesController.php`: Manages product categories.
+- `UnitsController.php`: Manages units of measurement for products (e.g., kg, box, piece).
+- `dashboardController.php`: Handles the data aggregation for the main dashboard.
 
-## Contributing
+### Sales & Order Controllers
+- `SalesController.php`: Manages the creation and listing of sales invoices.
+- `SaleDetailsController.php`: Manages individual line items of a sale.
+- `SalePaymentsController.php`: Handles payments received against specific sales.
+- `OrdersController.php`: Manages the lifecycle of customer orders.
+- `OrderbookerController.php`: Manages the profiles of order bookers (field sales reps).
+- `DeliverymanController.php` & `TransporterController.php`: Manages logistics personnel.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Purchase Controllers
+- `PurchaseController.php`: Manages purchase invoices from vendors.
+- `PurchaseOrderController.php`: Handles the creation of POs to be sent to vendors.
+- `PurchasePaymentsController.php`: Manages outgoing payments to vendors.
 
-## Code of Conduct
+### Stock & Inventory Controllers
+- `StockController.php`: General stock viewing and tracking.
+- `StockAdjustmentController.php`: Handles manual adjustments to stock levels (e.g., damages, audits).
+- `TransferController.php`: Manages stock movement between locations or warehouses.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Finance Controllers
+- `AccountsController.php`: Manages the chart of accounts (vendors, customers, banks, cash).
+- `DepositWithdrawController.php`: Handles cash/bank deposits and withdrawals.
+- `ExpensesController.php`: Records business expenses.
+- `PaymentReceivingController.php`: General payment receiving logic.
 
-## Security Vulnerabilities
+### Target Controllers
+- `TargetsController.php`, `SelfTargetController.php`, `OrderbookerTargetController.php`: Manages the creation, tracking, and evaluation of sales targets.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Other Controllers
+- `authController.php`, `confirmPasswordController.php`, `profileController.php`: Handle user authentication and profile management.
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 4. Views (`resources/views/`)
+
+The view layer is organized in directories that correspond to the controllers and routes:
+
+- `layout/`: Contains the master layout files (sidebar, header, footer) using Blade templates.
+- `dashboard/`: Dashboard views.
+- `auth/`: Login, registration, and password management views.
+- **Entity Views (CRUD interfaces):**
+  - `products/`, `categories/`, `units/`
+  - `sales/`, `orders/`, `orderbookers/`
+  - `purchase/`, `purchase_order/`
+  - `stock/`
+  - `finance/`
+  - `deliveryman/`, `transporter/`
+  - `target/`, `self_target/`, `orderbooker_target/`
+- `reports/`: Contains all the blade files for generating tabular reports and printouts.
+
+---
+
+## 5. Middleware & Security
+- `auth`: Most routes are protected by Laravel's default `auth` middleware.
+- `adminCheck`: Core setup routes (Units, Categories, Products) use the `adminCheck` middleware to restrict access to administrators only.
+
+## AI Instructions (Context for future prompts)
+When asked to modify this project:
+1. **Identify the Domain:** Determine if the request is about Sales, Purchase, Stock, or Finance.
+2. **Locate the Route:** Find the corresponding route file in `routes/` (e.g., `routes/finance.php`).
+3. **Locate the Controller:** Find the corresponding controller in `app/Http/Controllers/`.
+4. **Locate the View:** Look in `resources/views/` under the domain's folder name.
+5. **Keep modularity:** If adding a new feature, add it to its specific route file rather than `web.php`.

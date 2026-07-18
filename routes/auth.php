@@ -21,4 +21,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/changepassword', [profileController::class, 'changePassword'])->name('changePassword');
 
     Route::resource('orderbooker', OrderbookerController::class)->middleware(adminCheck::class);
+    Route::get('/orderbooker/{id}/customers', [OrderbookerController::class, 'customers'])->name('orderbooker.customers')->middleware(adminCheck::class);
+    Route::post('/orderbooker/{id}/customers/assign', [OrderbookerController::class, 'assignCustomer'])->name('orderbooker.customers.assign')->middleware(adminCheck::class);
+    Route::get('/orderbooker/{id}/customers/remove/{customer_id}', [OrderbookerController::class, 'removeCustomer'])->name('orderbooker.customers.remove')->middleware(adminCheck::class);
 });

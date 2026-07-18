@@ -26,6 +26,7 @@
                                                         <td>{{$booker->contact}}</td>
                                                         <td>
                                                                <button type="button" class="btn btn-info " data-bs-toggle="modal" data-bs-target="#edit_{{$booker->id}}">Edit</button>
+                                                               <a href="{{ route('orderbooker.customers', $booker->id) }}" class="btn btn-primary">Assign Customers</a>
                                                         </td>
                                                  </tr>
                                                  <div id="edit_{{$booker->id}}" class="modal fade" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">

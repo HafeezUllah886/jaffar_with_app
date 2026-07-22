@@ -15,38 +15,36 @@ class authController extends Controller
      */
     public function login(Request $request)
     {
-        $validate = validator::make($request->all(), [
+        $validate = Validator::make($request->all(), [
             'user_name' => 'required',
-            'password' => 'required' 
+            'password' => 'required',
         ]);
 
         if ($validate->fails()) {
             return response()->json([
                 'status' => 'error',
-                'message' => $validate->errors()
+                'message' => $validate->errors(),
             ], 422);
         }
 
         $user = User::where('name', $request->user_name)->first();
 
-        if(!$user || !Hash::check($request->password, $user->password))
-        {
+        if (! $user || ! Hash::check($request->password, $user->password)) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Invalid username or password'
+                'message' => 'Invalid username or ppppassword',
             ], 401);
         }
-        
-        if($user->status == "Inactive")
-        {
+
+        if ($user->status == 'Inactive') {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Account is inactive'
+                'message' => 'Account is inactive',
             ], 403);
         }
 
         $token = $user->createToken($request->user_name);
- 
+
         return response()->json([
             'user' => $user,
             'token' => $token->plainTextToken,
@@ -62,12 +60,12 @@ class authController extends Controller
         try {
             // Delete all tokens for the authenticated user
             $request->user()->tokens()->delete();
-            
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Successfully logged out',
             ]);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
@@ -76,5 +74,4 @@ class authController extends Controller
             ], 500);
         }
     }
-
 }

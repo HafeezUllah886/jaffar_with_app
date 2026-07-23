@@ -17,7 +17,11 @@ class NonFinancialInfoController extends Controller
         }
 
         return response()->json([
-            'products' => $products,
+            'status' => 'success',
+            'message' => 'Products fetched successfully',
+            'data' => [
+                'products' => $products,
+            ],
         ]);
     }
 
@@ -26,7 +30,11 @@ class NonFinancialInfoController extends Controller
         $units = units::all();
 
         return response()->json([
-            'units' => $units,
+            'status' => 'success',
+            'message' => 'Units fetched successfully',
+            'data' => [
+                'units' => $units,
+            ],
         ]);
     }
 }

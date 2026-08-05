@@ -1,0 +1,18 @@
+
+    'domains' => [
+        'jaffar_new.test',
+        'jaffar-s.test',
+        'jaffar.diamondquetta.com',
+        'jaffartest.diamondquetta.com',
+        'jaffar.run',
+    ],
+
+    'databases' => [
+        'u788011464_jaffar',
+        'jaffar',
+        'test',
+    ],
+
+    'files' => [
+        '192168 ',
+    ],

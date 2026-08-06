@@ -2,25 +2,25 @@
 
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\dashboardController;
+use App\Http\Controllers\DeepFreezerMovementsController;
+use App\Http\Controllers\DeepFreezerScansController;
+use App\Http\Controllers\DeepFreezersController;
 use App\Http\Controllers\DeliverymanController;
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\TransporterController;
 use App\Http\Controllers\UnitsController;
-use App\Http\Controllers\DeepFreezersController;
-use App\Http\Controllers\DeepFreezerMovementsController;
 use App\Http\Middleware\adminCheck;
 use Illuminate\Support\Facades\Route;
 
-
-require __DIR__ . '/auth.php';
-require __DIR__ . '/finance.php';
-require __DIR__ . '/purchase.php';
-require __DIR__ . '/stock.php';
-require __DIR__ . '/sale.php';
-require __DIR__ . '/reports.php';
-require __DIR__ . '/orders.php';
-require __DIR__ . '/targets.php';
-require __DIR__ . '/purchase_order.php';
+require __DIR__.'/auth.php';
+require __DIR__.'/finance.php';
+require __DIR__.'/purchase.php';
+require __DIR__.'/stock.php';
+require __DIR__.'/sale.php';
+require __DIR__.'/reports.php';
+require __DIR__.'/orders.php';
+require __DIR__.'/targets.php';
+require __DIR__.'/purchase_order.php';
 
 Route::middleware('auth')->group(function () {
 
@@ -34,7 +34,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('deep_freezer', DeepFreezersController::class);
     Route::resource('deep_freezer_movements', DeepFreezerMovementsController::class);
     Route::get('deep_freezer_movements/print/{id}', [DeepFreezerMovementsController::class, 'print'])->name('deep_freezer_movements.print');
+    Route::resource('deep_freezer_scans', DeepFreezerScansController::class);
 
 });
-
-

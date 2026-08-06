@@ -346,6 +346,11 @@
                                         data-key="t-chat">
                                         Freezer Movements </a>
                                 </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('deep_freezer_scans.index') }}" class="nav-link"
+                                        data-key="t-chat">
+                                        Freezer Scans </a>
+                                </li>
                             </ul>
                         </div>
                     </li>
